@@ -76,7 +76,7 @@
         }
       }
 
-      /* Icon Animations */
+      /* Animasi Ikon Mengapung */
       @keyframes float {
         0% {
           transform: translateY(0px);
@@ -114,7 +114,7 @@
         box-shadow: 0 0 0 4px rgba(107, 67, 121, 0.05);
       }
 
-      /* Rich Text Editor */
+      /* Rich Text Editor Styling */
       .editor-box {
         min-height: 120px;
         padding: 15px;
@@ -222,7 +222,6 @@
         transition: width 0.3s;
       }
 
-      /* Hide scrollbars but keep functionality */
       .no-scrollbar::-webkit-scrollbar {
         display: none;
       }
@@ -245,11 +244,19 @@
         projectId: "silo-informasi-perkara-6f20d",
         storageBucket: "silo-informasi-perkara-6f20d.firebasestorage.app",
         messagingSenderId: "482890293270",
-        appId: "1:482890293270:web:7a1f6300b491e937981537",
+        appId: "1:482890293270:web:d1dcf42de70e81f4981537",
         measurementId: "G-B3FQKSG5BH",
       };
 
-      const ADMIN_EMAILS = ["admin@silolawyer.com", "partner@silolawyer.com"];
+      // --- DAFTAR ADMIN (EMAIL KANTOR TERVERIFIKASI) ---
+      const ADMIN_EMAILS = [
+        "admin@silolawyer.com",
+        "partner@silolawyer.com",
+        "staf@silolawyer.com",
+        "litigasi@silolawyer.com", // Admin Tim Litigasi
+        "riset@silolawyer.com", // Admin Tim Riset
+      ];
+
       const ADMIN_WA_NUMBER = "6282328431512";
       let GEMINI_API_KEY = "AIzaSyCzz1pDqrMy6QGn7KSWHjQwt1AZjiaIuQg";
 
@@ -308,7 +315,7 @@
           ai_sum: "AI Summary ✨",
           save: "Save",
           add_photo: "Attach Photo (Max 150KB)",
-          copy_id: "COPY ID 📋",
+          copy_id: "COPY SYNC ID 📋",
           add_case: "+ CASE",
           wa_sync: "WA CONTACT 🟢",
           ai_rew: "AI Refine ✨",
@@ -355,12 +362,14 @@
             if (u) {
               const isAdmin = ADMIN_EMAILS.includes(u.email);
               setUser({ role: isAdmin ? "admin" : "client", email: u.email });
+
               const q = await db
                 .collection("clients")
                 .where("email", "==", u.email)
                 .get();
               const cases = q.docs.map((d) => ({ id: d.id, ...d.data() }));
               setMyCases(cases);
+
               if (isAdmin) setView("admin-dashboard");
               else {
                 if (cases.length > 0) setSelectedClientId(cases[0].id);
@@ -409,7 +418,7 @@
         if (view === "login")
           return (
             <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
-              <div className="bg-white p-8 md:p-10 rounded-[2.5rem] w-full max-w-md text-center shadow-2xl relative border-t-4 border-silo-purple fade-in font-sans">
+              <div className="bg-white p-8 md:p-10 rounded-[2.5rem] w-full max-w-lg text-center shadow-2xl relative border-t-4 border-silo-purple fade-in font-sans">
                 <div className="absolute top-4 right-6 flex bg-slate-50 rounded p-0.5 text-[9px] font-bold border">
                   <button
                     onClick={() => setLang("id")}
@@ -453,7 +462,7 @@
                         e.target.pass.value
                       );
                     } catch (err) {
-                      alert("Login Gagal.");
+                      alert("Data tidak ditemukan.");
                       setLoading(false);
                     }
                   }}
@@ -473,7 +482,7 @@
                     className="input-std border-slate-200"
                     required
                   />
-                  <button className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl uppercase text-[11px] tracking-widest active:scale-95 transition shadow-lg shadow-slate-200">
+                  <button className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl uppercase text-[11px] tracking-widest transition shadow-lg shadow-slate-200">
                     {t("login_btn")}
                   </button>
                 </form>
@@ -494,7 +503,9 @@
                       <span>⬅</span> {t("back_list")}
                     </button>
                   ) : (
-                    <div className="text-lg animate-float">⚖️</div>
+                    <div className="text-lg animate-float text-amber-500">
+                      ⚖️
+                    </div>
                   )}
                   <div>
                     <h1 className="font-bold text-sm tracking-tight uppercase italic leading-none">
@@ -552,7 +563,7 @@
                     </div>
                     <button
                       onClick={() => handleAddCase()}
-                      className="bg-slate-900 text-white px-3 py-1.5 rounded text-[10px] font-bold"
+                      className="bg-slate-900 text-white px-3 py-1.5 rounded text-[10px] font-bold active:scale-95 shadow uppercase tracking-wider"
                     >
                       + NEW CLIENT
                     </button>
@@ -581,7 +592,9 @@
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigator.clipboard.writeText(c.id);
-                                alert("ID DISALIN!");
+                                alert(
+                                  "ID DISALIN! Tempelkan ID ini pada aplikasi SILO STRATEGY."
+                                );
                               }}
                               className="text-[8px] bg-indigo-50 text-indigo-600 font-black px-2 py-0.5 rounded border border-indigo-100 hover:bg-indigo-600 hover:text-white transition uppercase"
                             >
@@ -598,9 +611,9 @@
                           </button>
                           <button
                             onClick={() => setSelectedClientId(c.id)}
-                            className="bg-slate-900 text-white px-4 py-2 rounded-lg text-[10px] font-bold active:scale-95 transition shadow"
+                            className="bg-slate-900 text-white px-4 py-2 rounded-lg text-[10px] font-bold active:scale-95 transition shadow uppercase"
                           >
-                            OPEN
+                            Open
                           </button>
                         </div>
                       </div>
@@ -658,7 +671,7 @@
         const editorRef = useRef(null);
         const chatEnd = useRef(null);
 
-        // Real-time Memory Filtered Listener
+        // Fetch Real-time with Memory Filter
         useEffect(() => {
           if (!clientId) return;
           const unsubLogs = db.collection("case_logs").onSnapshot((s) => {
@@ -816,7 +829,12 @@
         };
 
         const saldo = data.finance.reduce(
-          (acc, c) => (c.type === "Top Up" ? acc + c.amount : acc - c.amount),
+          (acc, c) =>
+            c.type === "Top Up" && c.status !== "Pending"
+              ? acc + c.amount
+              : c.type !== "Top Up"
+              ? acc - c.amount
+              : acc,
           0
         );
         const fmt = (n) =>
@@ -881,7 +899,7 @@
             </div>
 
             <div className="bg-white p-3 md:p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[450px]">
-              {/* 1. LAPORAN */}
+              {/* 1. LAPORAN DENGAN FORMAT TABEL */}
               {tab === "perkara" && (
                 <div className="space-y-6">
                   {userRole === "admin" && (
@@ -901,7 +919,7 @@
                               editorRef.current.innerHTML = "";
                               document.getElementById("caseForm").reset();
                             }}
-                            className="text-[10px] font-bold text-red-500 underline uppercase"
+                            className="text-[10px] font-bold text-red-500 underline uppercase tracking-widest"
                           >
                             Batal Edit
                           </button>
@@ -995,7 +1013,7 @@
                   )}
 
                   <div className="flex justify-between items-center border-b pb-2 px-1">
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic tracking-tighter">
                       Arsip Laporan SIMER
                     </h3>
                     <button
@@ -1011,14 +1029,14 @@
                         setAiLoading(false);
                       }}
                       disabled={aiLoading}
-                      className="text-silo-purple text-[9px] font-bold border border-purple-100 px-2 py-1 rounded bg-purple-50 active:scale-95 transition uppercase"
+                      className="text-silo-purple text-[9px] font-bold border border-purple-100 px-2 py-1 rounded bg-purple-50 active:scale-95 transition uppercase tracking-widest"
                     >
                       {aiLoading ? "..." : t("ai_sum")}
                     </button>
                   </div>
 
                   {aiSummary && (
-                    <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-lg text-[12px] text-slate-600 shadow-inner fade-in italic">
+                    <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-lg text-[12px] text-slate-600 shadow-inner fade-in italic leading-relaxed">
                       "{aiSummary}"
                     </div>
                   )}
@@ -1097,6 +1115,16 @@
                             )}
                           </tr>
                         ))}
+                        {data.logs.length === 0 && (
+                          <tr>
+                            <td
+                              colSpan="3"
+                              className="text-center py-20 text-slate-300 text-[10px] uppercase font-bold italic tracking-widest"
+                            >
+                              Timeline Kosong
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -1106,16 +1134,18 @@
               {/* 2. KEUANGAN */}
               {tab === "keuangan" && (
                 <div className="space-y-5">
-                  <div className="bg-slate-900 text-white p-5 rounded-xl shadow-lg border-l-4 border-amber-500 flex justify-between items-center">
-                    <div>
+                  <div className="bg-slate-900 text-white p-5 rounded-xl shadow-lg border-l-4 border-amber-500 flex justify-between items-center relative overflow-hidden">
+                    <div className="relative z-10">
                       <p className="text-[9px] uppercase text-slate-400 font-bold mb-0.5 tracking-wider">
                         Saldo Perkara
                       </p>
-                      <h3 className="text-xl font-bold text-amber-400 font-mono">
+                      <h3 className="text-xl font-bold text-amber-400 font-mono tracking-tighter">
                         Rp {saldo.toLocaleString("id-ID")}
                       </h3>
                     </div>
-                    <div className="opacity-10 text-3xl text-white">💰</div>
+                    <div className="opacity-10 text-4xl text-white absolute -right-2 top-1/2 -translate-y-1/2">
+                      💰
+                    </div>
                   </div>
                   {userRole === "admin" && (
                     <form
@@ -1131,6 +1161,7 @@
                             category: fd.get("c"),
                             amount: parseInt(fd.get("a")),
                             description: fd.get("ds"),
+                            status: "Verified",
                             createdAt:
                               firebase.firestore.FieldValue.serverTimestamp(),
                           });
@@ -1154,7 +1185,10 @@
                         </select>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        <select name="c" className="input-std text-[11px]">
+                        <select
+                          name="c"
+                          className="input-std text-[11px] font-bold"
+                        >
                           <option>Operasional</option>
                           <option>Transport</option>
                           <option>Lawyer Fee</option>
@@ -1164,14 +1198,14 @@
                           type="number"
                           placeholder="Rp 0"
                           required
-                          className="input-std font-bold text-[11px]"
+                          className="input-std font-bold text-[11px] font-mono"
                         />
                       </div>
                       <input
                         name="ds"
                         placeholder="Keterangan rincian..."
                         required
-                        className="input-std text-[11px]"
+                        className="input-std text-[11px] font-medium"
                       />
                       <button className="w-full bg-slate-900 text-white py-2.5 rounded-lg font-bold uppercase active:scale-95 shadow text-[10px] tracking-widest">
                         {t("save")}
@@ -1208,7 +1242,7 @@
                               </div>
                             </td>
                             <td
-                              className={`text-right font-bold text-[10px] ${
+                              className={`text-right font-bold text-[10px] font-mono ${
                                 l.type === "Top Up"
                                   ? "text-green-600"
                                   : "text-red-500"
@@ -1264,7 +1298,7 @@
                 </div>
               )}
 
-              {/* 3. BERKAS */}
+              {/* 3. BERKAS DENGAN PILIHAN UPLOAD FILE */}
               {tab === "dokumen" && (
                 <div className="space-y-4">
                   {userRole === "admin" && (
@@ -1325,7 +1359,7 @@
                               style={{ width: `${progress}%` }}
                             ></div>
                           </div>
-                          <p className="text-[9px] text-center mt-1 text-slate-400">
+                          <p className="text-[9px] text-center mt-1 text-slate-400 font-bold uppercase tracking-widest">
                             {t("uploading")} {Math.round(progress)}%
                           </p>
                         </div>
@@ -1348,7 +1382,7 @@
                           <div className="bg-indigo-50 text-indigo-700 w-10 h-10 flex items-center justify-center rounded-lg font-black text-[9px] border border-indigo-100 uppercase leading-none">
                             {d.type || "DOC"}
                           </div>
-                          <div className="font-bold text-xs text-slate-800 uppercase leading-none">
+                          <div className="font-bold text-xs text-slate-800 uppercase leading-none tracking-tighter">
                             {d.title}
                           </div>
                         </div>
@@ -1372,6 +1406,11 @@
                         </div>
                       </div>
                     ))}
+                    {data.docs.length === 0 && (
+                      <p className="text-center py-20 text-slate-300 text-[10px] uppercase font-bold tracking-widest italic">
+                        Belum ada berkas perkara.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -1488,7 +1527,7 @@
                       <input
                         id="chatInput"
                         name="msg"
-                        className="input-std flex-1 shadow-inner border-slate-100 text-[13px]"
+                        className="input-std flex-1 shadow-inner border-slate-100 text-[13px] font-medium"
                         placeholder="Tulis pesan diskusi..."
                         autoComplete="off"
                       />
